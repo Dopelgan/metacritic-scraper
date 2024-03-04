@@ -17,7 +17,7 @@ This library scrapes metacritic.com so changes their site can cause parts of thi
 
 ### Install via composer
 ``` bash
-$ composer require hooshid/metacritic-scraper
+$ composer require dopelgan/metacritic-scraper
 ```
 
 ## Run examples
