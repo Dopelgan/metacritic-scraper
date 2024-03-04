@@ -1,5 +1,5 @@
 {
-    "name": "hooshid/metacritic-scraper",
+    "name": "dopelgan/metacritic-scraper",
     "description": "Library for retrieving movie, game, album, tv, person, video, company, story information from metacritic.com",
     "keywords": [
         "php",
