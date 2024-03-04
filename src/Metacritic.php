@@ -293,12 +293,13 @@ class Metacritic extends Base
         /*********************************** New Version *******************************/
         if ($html->findOneOrFalse('#__nuxt')) {
             $json = $this->jsonLD($response);
-            $title = $json->mainEntity->name;
-            $thumbnail = $this->cleanString($json->mainEntity->image);
-            $releaseYear = $this->cleanString($json->mainEntity->dateCreated);
-            $summary = $this->cleanString($json->mainEntity->description);
-            $metaScore = $this->cleanString($json->mainEntity->aggregateRating->ratingValue);
-            $metaScoreVotesCount = $this->cleanString($json->mainEntity->aggregateRating->ratingCount);
+            $title = $json->name;
+            $genres = $json->genre;
+            $thumbnail = $this->cleanString($json->image);
+            $releaseYear = $this->cleanString($json->dateCreated);
+            $summary = $this->cleanString($json->description);
+            $metaScore = $this->cleanString($json->aggregateRating->ratingValue);
+            $metaScoreVotesCount = $this->cleanString($json->aggregateRating->ratingCount);
 
             $mustSee = $html->findOneOrFalse('.must_play.product');
             $userScore = $this->cleanString($html->find('.c-siteReviewScore_user span', 0)->text());
@@ -348,7 +349,7 @@ class Metacritic extends Base
             }
         }
 
-        $output['genres'] = $html->find('.genres span span, .product_genre .data')->text();
+        $output['genres'] = $genres;
 
         if ($type == "music") {
             $output['artist'] = $html->find('.product_artist a span', 0)->text();
@@ -378,7 +379,7 @@ class Metacritic extends Base
 
     public function person($url): array
     {
-        if (!str_contains($url, '/person/')) {
+        if (!str_contains($url, 'person')) {
             $url = "/person/" . $url;
         }
 
@@ -423,7 +424,7 @@ class Metacritic extends Base
             $html = HtmlDomParser::str_get_html($response);
         }
 
-        $output['series'] = [];
+        $output['tv'] = [];
         if ($html->findOneOrFalse(".person_credits") and str_contains($types, 'TV')) {
             foreach ($html->find(".person_credits tr") as $e) {
                 $href = $e->find('a', 0)->getAttribute('href');
@@ -438,10 +439,8 @@ class Metacritic extends Base
                 }
 
                 if (!empty($href) and !empty($title)) {
-                    $output['series'][] = [
+                    $output['tv'][] = [
                         'title' => $this->cleanString($title),
-                        'series_title' => trim($this->beforeLast($title, ':')),
-                        'series_season' => trim($this->afterLast($title, ':')),
                         'url' => $this->baseUrl . $href,
                         'url_slug_season' => $this->afterLast($href),
                         'url_slug' => $this->beforeLast(str_replace('/tv/', '', $href)),
@@ -451,18 +450,9 @@ class Metacritic extends Base
             }
         }
 
-        $error = $this->cleanString($html->find('.error_title', 0)->text());
-        if (!empty($error)) {
-            if (str_contains($error, '404') or str_contains($error, 'Page Not Found')) {
-                $error = 404;
-            } elseif (str_contains($error, '503') or str_contains($error, 'Service Unavailable')) {
-                $error = 503;
-            }
-        }
-
         return [
             'result' => $output,
-            'error' => $error
+            'error' => $this->cleanString($html->find('.error_title', 0)->text())
         ];
     }
 
